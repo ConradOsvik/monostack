@@ -1,0 +1,20 @@
+{
+  "name": "@{{projectName}}/api",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/root.ts",
+    "./trpc": "./src/trpc.ts",
+    "./caller": "./src/caller.ts"
+  },
+  "dependencies": {
+    "@trpc/server": "catalog:",
+    "@{{projectName}}/env": "workspace:*",
+    "superjson": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@{{projectName}}/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

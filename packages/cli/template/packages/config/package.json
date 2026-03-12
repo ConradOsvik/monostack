@@ -1,0 +1,9 @@
+{
+  "name": "@{{projectName}}/config",
+  "private": true,
+  "exports": {
+    "./tsconfig/base": "./tsconfig/base.json",
+    "./tsconfig/web": "./tsconfig/web.json",
+    "./tsconfig/native": "./tsconfig/native.json"
+  }
+}

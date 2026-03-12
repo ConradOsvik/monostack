@@ -1,0 +1,16 @@
+{
+  "name": "@{{projectName}}/auth",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
+  "dependencies": {
+    "@{{projectName}}/env": "workspace:*"
+  },
+  "devDependencies": {
+    "@{{projectName}}/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

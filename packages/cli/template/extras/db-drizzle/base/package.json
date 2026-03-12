@@ -1,0 +1,16 @@
+{
+  "name": "@{{projectName}}/db",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "dependencies": {
+    "@{{projectName}}/env": "workspace:*"
+  },
+  "devDependencies": {
+    "@{{projectName}}/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

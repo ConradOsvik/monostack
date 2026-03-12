@@ -1,0 +1,9 @@
+{
+  "extends": "@{{projectName}}/config/tsconfig/web",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "*.ts"]
+}

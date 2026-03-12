@@ -1,0 +1,6 @@
+# Database (if using database feature)
+# DATABASE_URL=
+
+# Auth (if using auth feature)
+# BETTER_AUTH_SECRET=
+# BETTER_AUTH_URL=http://localhost:3000

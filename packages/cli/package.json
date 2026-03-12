@@ -1,0 +1,37 @@
+{
+  "name": "create-monostack",
+  "version": "0.1.0",
+  "description": "CLI to scaffold opinionated fullstack monorepos",
+  "license": "MIT",
+  "bin": {
+    "create-monostack": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "template"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.10.0",
+    "commander": "^13.1.0",
+    "execa": "^9.5.2",
+    "fs-extra": "^11.3.0",
+    "ora": "^8.2.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.13.10",
+    "tsup": "^8.4.0",
+    "typescript": "catalog:",
+    "vitest": "^4.0.18"
+  }
+}

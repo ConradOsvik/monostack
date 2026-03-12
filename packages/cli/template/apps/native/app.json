@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "{{projectName}}",
+    "slug": "{{projectName}}",
+    "version": "1.0.0",
+    "scheme": "{{projectName}}",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "bundleIdentifier": "com.{{projectName}}.app",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.{{projectName}}.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "plugins": ["expo-router"]
+  }
+}
