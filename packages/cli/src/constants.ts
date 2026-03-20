@@ -1,7 +1,8 @@
 export const DEFAULT_PROJECT_NAME = "my-app";
 
+export type ModuleName = "db" | "auth" | "native" | "mail";
+
 export type DatabaseType = "postgres" | "mysql" | "sqlite";
-export type OrmType = "drizzle" | "prisma";
 export type DatabaseProvider =
   | "neon"
   | "supabase"
@@ -12,8 +13,7 @@ export type DatabaseProvider =
 
 export interface ProjectOptions {
   projectName: string;
-  auth: boolean;
-  orm: OrmType | null;
+  modules: ModuleName[];
   database: DatabaseType | null;
   provider: DatabaseProvider | null;
   git: boolean;
@@ -98,11 +98,10 @@ export const DEPENDENCY_VERSIONS = {
   postgres: "^3.4.5",
   "@libsql/client": "^0.14.0",
 
-  // Prisma
-  "@prisma/client": "^6.5.0",
-  prisma: "^6.5.0",
-  "@prisma/adapter-neon": "^6.5.0",
-  "@prisma/adapter-libsql": "^6.5.0",
+  // Mail
+  resend: "^4.1.2",
+  "@react-email/components": "^0.0.36",
+  "react-email": "^3.0.6",
 
   // Build / tooling
   typescript: "^5.8.2",

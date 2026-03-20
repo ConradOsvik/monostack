@@ -2,7 +2,7 @@ import { initTRPC } from "@trpc/server";
 import { db } from "@{{projectName}}/db";
 import superjson from "superjson";
 
-export const createTRPCContext = async () => ({ db });
+export const createTRPCContext = () => ({ db });
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,

@@ -18,6 +18,7 @@
     "fix": "turbo lint:fix format"
   },
   "devDependencies": {
+    "@types/node": "^22.13.10",
     "oxfmt": "latest",
     "oxlint": "latest",
     "turbo": "^2.5.0",

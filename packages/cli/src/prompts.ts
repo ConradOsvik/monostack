@@ -6,7 +6,7 @@ import {
   PROVIDER_MAP,
   type DatabaseProvider,
   type DatabaseType,
-  type OrmType,
+  type ModuleName,
   type ProjectOptions,
 } from "./constants.js";
 
@@ -37,50 +37,40 @@ export async function runPrompts(
     process.exit(0);
   }
 
-  // Features selection
-  let auth = flags.auth ?? false;
-  let hasDb = flags.orm !== undefined;
+  // Module selection
+  let modules: ModuleName[] = flags.modules ?? [];
 
-  if (flags.auth === undefined && flags.orm === undefined) {
-    const features = await p.multiselect({
-      message: "Which optional features do you want?",
+  if (modules.length === 0 && !flags.modules) {
+    const selected = await p.multiselect({
+      message: "Which modules do you want to include?",
       options: [
+        { label: "Database (Drizzle)", value: "db" },
         { label: "Authentication (Better Auth)", value: "auth" },
-        { label: "Database", value: "db" },
+        { label: "Native App (Expo + React Native)", value: "native" },
+        { label: "Email (React Email + Resend)", value: "mail" },
       ],
       required: false,
     });
 
-    if (p.isCancel(features)) {
+    if (p.isCancel(selected)) {
       p.cancel("Operation cancelled.");
       process.exit(0);
     }
 
-    auth = (features as string[]).includes("auth");
-    hasDb = (features as string[]).includes("db");
+    modules = selected as ModuleName[];
   }
 
-  // ORM selection
-  let orm: OrmType | null = flags.orm ?? null;
-  if (hasDb && !orm) {
-    const ormChoice = await p.select({
-      message: "Which ORM?",
-      options: [
-        { label: "Drizzle (Recommended)", value: "drizzle" },
-        { label: "Prisma", value: "prisma" },
-      ],
-    });
-
-    if (p.isCancel(ormChoice)) {
-      p.cancel("Operation cancelled.");
-      process.exit(0);
-    }
-    orm = ormChoice as OrmType;
+  // Auto-add db if auth is selected (auth depends on db)
+  if (modules.includes("auth") && !modules.includes("db")) {
+    modules = ["db", ...modules];
+    p.log.info(
+      pc.dim("Authentication requires a database — adding database module.")
+    );
   }
 
   // Database type selection
   let database: DatabaseType | null = flags.database ?? null;
-  if (orm && !database) {
+  if (modules.includes("db") && !database) {
     const dbChoice = await p.select({
       message: "Which database?",
       options: [
@@ -98,7 +88,7 @@ export async function runPrompts(
   }
 
   // Provider selection
-  let provider = flags.provider ?? null;
+  let provider: DatabaseProvider | null = flags.provider ?? null;
   if (database && !provider) {
     const providers = PROVIDER_MAP[database];
     const providerChoice = await p.select({
@@ -144,11 +134,10 @@ export async function runPrompts(
   }
 
   return {
-    auth,
     database,
     git,
     install,
-    orm,
+    modules,
     projectName,
     provider,
   };

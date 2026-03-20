@@ -1,0 +1,29 @@
+{
+  "name": "@{{projectName}}/mail",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./emails": {
+      "types": "./src/emails/index.ts",
+      "default": "./src/emails/index.ts"
+    }
+  },
+  "scripts": {
+    "dev": "email dev",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@{{projectName}}/env": "workspace:*",
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@{{projectName}}/config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

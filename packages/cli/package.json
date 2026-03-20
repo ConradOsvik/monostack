@@ -4,7 +4,8 @@
   "description": "CLI to scaffold opinionated fullstack monorepos",
   "license": "MIT",
   "bin": {
-    "create-monostack": "./dist/index.js"
+    "create-monostack": "./dist/index.js",
+    "monostack": "./dist/index.js"
   },
   "files": [
     "dist",
@@ -17,7 +18,9 @@
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:integration": "vitest run test/integration.test.ts --timeout 120000",
+    "link": "bun run build && bun link"
   },
   "dependencies": {
     "@clack/prompts": "^0.10.0",

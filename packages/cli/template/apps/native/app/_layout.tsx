@@ -10,6 +10,7 @@ export default function RootLayout() {
           headerShown: false,
         }}
       />
+      {/* eslint-disable-next-line react/style-prop-object -- Expo StatusBar uses string style prop */}
       <StatusBar style="auto" />
     </>
   );

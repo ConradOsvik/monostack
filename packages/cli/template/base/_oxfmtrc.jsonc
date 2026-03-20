@@ -12,6 +12,7 @@
   "bracketSameLine": false,
   "arrowParens": "always",
   "endOfLine": "lf",
+  "ignorePatterns": ["**/routeTree.gen.ts", "**/dist/**"],
   "experimentalSortPackageJson": true,
   "experimentalSortImports": {
     "ignoreCase": true,

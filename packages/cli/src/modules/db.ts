@@ -3,27 +3,51 @@ import path from "node:path";
 import fs from "fs-extra";
 
 import type { DatabaseProvider, DatabaseType } from "../constants.js";
+import { applyTrpcVariant } from "../utils/autowire.js";
 import {
   addPackageDependency,
   updatePackageJson,
   mergeJsonFile,
 } from "../utils/deps.js";
 import { copyTemplateDir } from "../utils/fs.js";
-import type { InstallerContext } from "./index.js";
+import type {
+  AddContext,
+  InstallerContext,
+  ModuleDefinition,
+} from "./index.js";
 
-export function dbPrismaInstaller(ctx: InstallerContext): void {
+export const dbModule: ModuleDefinition = {
+  name: "db",
+  label: "Database (Drizzle)",
+  dependencies: [],
+
+  detect(projectDir: string): boolean {
+    return fs.existsSync(path.join(projectDir, "packages/db/package.json"));
+  },
+
+  install(ctx: InstallerContext): void {
+    dbInstaller(ctx);
+  },
+
+  async add(ctx: AddContext): Promise<void> {
+    dbInstaller(ctx);
+    await applyTrpcVariant(ctx);
+  },
+};
+
+function dbInstaller(ctx: InstallerContext): void {
   const { projectDir, templateDir, options } = ctx;
   const dbPkgDir = path.join(projectDir, "packages/db");
   const extras = path.join(templateDir, "extras");
 
-  // Copy base prisma files
-  copyTemplateDir(path.join(extras, "db-prisma/base"), dbPkgDir);
+  // Copy base drizzle files
+  copyTemplateDir(path.join(extras, "db-drizzle/base"), dbPkgDir);
 
-  // Copy provider-specific files
+  // Copy provider-specific files (overrides/additions)
   const providerDir = getProviderDir(options.database!, options.provider!);
-  if (fs.existsSync(path.join(extras, `db-prisma/providers/${providerDir}`))) {
+  if (fs.existsSync(path.join(extras, `db-drizzle/providers/${providerDir}`))) {
     copyTemplateDir(
-      path.join(extras, `db-prisma/providers/${providerDir}`),
+      path.join(extras, `db-drizzle/providers/${providerDir}`),
       dbPkgDir
     );
   }
@@ -31,18 +55,18 @@ export function dbPrismaInstaller(ctx: InstallerContext): void {
   // Add dependencies to db package.json
   const dbPkgJson = path.join(dbPkgDir, "package.json");
   addPackageDependency(dbPkgJson, {
-    dependencies: getPrismaDeps(options.provider!),
-    devDependencies: ["prisma"],
+    dependencies: getDrizzleDeps(options.database!, options.provider!),
+    devDependencies: ["drizzle-kit"],
   });
 
-  // Add db scripts
+  // Add db scripts to db package.json
   updatePackageJson(dbPkgJson, (pkg) => {
     pkg.scripts = {
       ...(pkg.scripts as Record<string, string> | undefined),
-      "db:generate": "prisma generate",
-      "db:migrate": "prisma migrate dev",
-      "db:push": "prisma db push",
-      "db:studio": "prisma studio",
+      "db:generate": "drizzle-kit generate",
+      "db:migrate": "drizzle-kit migrate",
+      "db:push": "drizzle-kit push",
+      "db:studio": "drizzle-kit studio",
     };
   });
 
@@ -54,7 +78,7 @@ export function dbPrismaInstaller(ctx: InstallerContext): void {
     );
   }
 
-  // Copy db-web extras (env additions)
+  // Copy db-web extras (env additions for web)
   if (fs.existsSync(path.join(extras, "db-web"))) {
     copyTemplateDir(
       path.join(extras, "db-web"),
@@ -74,7 +98,7 @@ export function dbPrismaInstaller(ctx: InstallerContext): void {
     });
   }
 
-  // Add tasks to turbo.json
+  // Add db:push and db:generate to turbo.json
   const turboJsonPath = path.join(projectDir, "turbo.json");
   if (fs.existsSync(turboJsonPath)) {
     mergeJsonFile(turboJsonPath, {
@@ -95,20 +119,39 @@ function getProviderDir(db: DatabaseType, provider: DatabaseProvider): string {
   return provider;
 }
 
-function getPrismaDeps(
+function getDrizzleDeps(
+  db: DatabaseType,
   provider: DatabaseProvider
 ): (keyof typeof import("../constants.js").DEPENDENCY_VERSIONS)[] {
   const deps: (keyof typeof import("../constants.js").DEPENDENCY_VERSIONS)[] = [
-    "@prisma/client",
+    "drizzle-orm",
   ];
 
   switch (provider) {
     case "neon": {
-      deps.push("@neondatabase/serverless", "@prisma/adapter-neon");
+      deps.push("@neondatabase/serverless");
+      break;
+    }
+    case "supabase":
+    case "vercel-postgres":
+    case "local": {
+      if (db === "postgres") {
+        deps.push("postgres");
+      }
+      if (db === "mysql") {
+        deps.push("postgres");
+      } // mysql2 would be needed - using postgres as placeholder
+      if (db === "sqlite") {
+        deps.push("@libsql/client");
+      }
       break;
     }
     case "turso": {
-      deps.push("@libsql/client", "@prisma/adapter-libsql");
+      deps.push("@libsql/client");
+      break;
+    }
+    case "planetscale": {
+      deps.push("postgres"); // mysql2 would be needed
       break;
     }
   }

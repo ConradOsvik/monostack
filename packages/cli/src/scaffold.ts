@@ -5,11 +5,11 @@ import fs from "fs-extra";
 
 import type { ProjectOptions } from "./constants.js";
 import {
-  dbDrizzleInstaller,
-  dbPrismaInstaller,
-  authInstaller,
+  MODULES,
+  resolveModuleOrder,
   type InstallerContext,
-} from "./installers/index.js";
+} from "./modules/index.js";
+import { applyTrpcVariantSync } from "./utils/autowire.js";
 import { copyTemplateDir, interpolateDir } from "./utils/fs.js";
 import { logger } from "./utils/logger.js";
 import {
@@ -39,18 +39,12 @@ export async function scaffold(
   copyTemplateDir(path.join(templateDir, "base"), projectDir);
   logger.success("Copied base template");
 
-  // 2. Copy app templates
+  // 2. Copy web app
   copyTemplateDir(
     path.join(templateDir, "apps/web"),
     path.join(projectDir, "apps/web")
   );
   logger.success("Set up web app (TanStack Start + Tailwind + shadcn)");
-
-  copyTemplateDir(
-    path.join(templateDir, "apps/native"),
-    path.join(projectDir, "apps/native")
-  );
-  logger.success("Set up native app (Expo + UniWind)");
 
   // 3. Copy core packages
   copyTemplateDir(
@@ -71,34 +65,33 @@ export async function scaffold(
   );
   logger.success("Added API package (tRPC)");
 
-  // 4. Run feature installers
-  if (options.orm === "drizzle") {
-    dbDrizzleInstaller(ctx);
-    logger.success(`Added database package (Drizzle + ${options.provider})`);
-  } else if (options.orm === "prisma") {
-    dbPrismaInstaller(ctx);
-    logger.success(`Added database package (Prisma + ${options.provider})`);
+  // 4. Run module installers in dependency order
+  const orderedModules = resolveModuleOrder(options.modules);
+  for (const moduleName of orderedModules) {
+    const mod = MODULES[moduleName];
+    mod.install(ctx);
+    logger.success(`Added ${mod.label}`);
   }
 
-  if (options.auth) {
-    authInstaller(ctx);
-    logger.success("Added auth package (Better Auth)");
-  }
+  // 5. Apply the correct trpc.ts variant based on all selected modules
+  applyTrpcVariantSync(projectDir, templateDir, options.modules);
 
-  // If both auth and db are enabled, use the combined trpc.ts
-  if (options.auth && options.orm) {
-    const combinedApiDir = path.join(templateDir, "extras/auth-db-api");
-    if (fs.existsSync(combinedApiDir)) {
-      copyTemplateDir(combinedApiDir, path.join(projectDir, "packages/api"));
-    }
-  }
-
-  // 5. Interpolate all template variables
+  // 6. Interpolate all template variables
   interpolateDir(projectDir, {
     projectName: options.projectName,
   });
 
-  // 6. Install dependencies
+  // 7. Format all files
+  try {
+    await execa("npx", ["oxfmt", "--write", "."], {
+      cwd: projectDir,
+      stdio: "pipe",
+    });
+  } catch {
+    // oxfmt not available — skip formatting
+  }
+
+  // 8. Install dependencies
   if (options.install) {
     const oraModule = await import("ora");
     const ora = oraModule.default;
@@ -112,7 +105,7 @@ export async function scaffold(
     }
   }
 
-  // 7. Git init
+  // 9. Git init
   if (options.git) {
     try {
       await execa("git", ["init"], { cwd: projectDir });

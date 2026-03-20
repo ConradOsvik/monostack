@@ -1,0 +1,8 @@
+{
+  "extends": "@{{projectName}}/config/tsconfig/base",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "outDir": "./dist"
+  },
+  "include": ["src"]
+}
